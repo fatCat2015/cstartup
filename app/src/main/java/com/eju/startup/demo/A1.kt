@@ -14,6 +14,6 @@ class A1: Initializer<Unit> {
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> {
-        return listOf(ApplicationInitializer::class.java,PrivacyPolicyInitializer::class.java)
+        return emptyList()
     }
 }

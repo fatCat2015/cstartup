@@ -30,13 +30,7 @@
             android:exported="false"
             tools:node="merge">
             <meta-data
-                android:name="com.eju.startup.demo.A1"
-                android:value="eju.startup" />
-            <meta-data
-                android:name="com.eju.startup.demo.A2"
-                android:value="eju.startup" />
-            <meta-data
-                android:name="com.eju.startup.demo.A3"
+                android:name="com.eju.startup.demo.C0"
                 android:value="eju.startup" />
         </provider>
     </application>
