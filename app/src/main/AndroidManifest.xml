@@ -4,6 +4,7 @@
     package="com.eju.startup">
 
     <application
+        android:name=".demo.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -11,7 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CStartup">
         <activity
-            android:name="com.eju.startup.demo.MainActivity"
+            android:name=".demo.MainActivity2"
+            android:exported="false" />
+        <activity
+            android:name=".demo.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,13 +25,18 @@
         </activity>
 
         <provider
-            android:name="com.eju.startup.InitializationProvider"
+            android:name=".InitializationProvider"
             android:authorities="${applicationId}.eju-startup"
             android:exported="false"
-            tools:node="merge" >
-            <meta-data android:name="com.eju.startup.demo.C0"
+            tools:node="merge">
+            <meta-data
+                android:name="com.eju.startup.demo.A1"
                 android:value="eju.startup" />
-            <meta-data android:name="com.eju.startup.demo.C1"
+            <meta-data
+                android:name="com.eju.startup.demo.A2"
+                android:value="eju.startup" />
+            <meta-data
+                android:name="com.eju.startup.demo.A3"
                 android:value="eju.startup" />
         </provider>
     </application>

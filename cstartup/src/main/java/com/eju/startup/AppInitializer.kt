@@ -40,7 +40,9 @@ object AppInitializer{
 
     private val initializerAllDependencies :HashMap<Initializer<*>,HashSet<Initializer<*>>> = HashMap()
 
-    fun <T> getInitializedValue(clazz: Class<*>) = mInitializedValue[clazz]?:throw  StartupException(NullPointerException("${clazz.simpleName} has not initialized"))
+    fun <T> getInitializedValue(clazz: Class<*>) = (mInitializedValue[clazz] as T)?:throw  StartupException(NullPointerException("${clazz.simpleName} has not initialized"))
+
+    fun cancel() = coroutineScope.cancel()
 
     internal fun discoverAndInitialize() {
         coroutineScope.launch {
@@ -59,7 +61,7 @@ object AppInitializer{
                         it.remove(initializer)
                     }
                 }.map {
-                    async (Dispatchers.IO){
+                    async {
                         mInitializedValue[it.javaClass] = it.create(context) as Any
                     }
                 }
@@ -69,9 +71,6 @@ object AppInitializer{
             toCreateInitializers = initializerAllDependencies.filterValues { it.isEmpty()}
         }
     }
-
-
-
 
     private fun assembleInitializesDependencies(){
         try {

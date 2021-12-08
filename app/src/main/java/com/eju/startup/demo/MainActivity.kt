@@ -1,9 +1,11 @@
 package com.eju.startup.demo
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.postDelayed
 import com.eju.startup.R
 import java.util.*
 
@@ -14,9 +16,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        
-        findViewById<TextView>(R.id.tvTest).setOnClickListener{
+
+        val tv = findViewById<TextView>(R.id.tvTest)
+
+        tv.setOnClickListener{
             Toast.makeText(this, "11111", Toast.LENGTH_SHORT).show()
         }
+
+        tv.postDelayed(2000){
+//            startActivity(Intent(this,MainActivity2::class.java))
+        }
+
     }
 }
