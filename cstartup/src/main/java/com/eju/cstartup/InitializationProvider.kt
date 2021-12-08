@@ -38,7 +38,6 @@ class InitializationProvider : ContentProvider() {
     }
 
     override fun onCreate(): Boolean {
-        Log.i("sck220", "InitializationProvideronCreate: ")
         val context = context
         if (context != null) {
             sContext = context

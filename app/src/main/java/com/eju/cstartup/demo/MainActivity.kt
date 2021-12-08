@@ -5,8 +5,11 @@ import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import com.eju.cstartup.R
+import java.util.*
 
 const val TAG = "sck220"
+val randomDelay :Long get() = Random().nextInt(5)*1000L+1000
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
