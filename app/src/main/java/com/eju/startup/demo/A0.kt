@@ -1,10 +1,9 @@
-package com.eju.cstartup.demo
+package com.eju.startup.demo
 
 import android.content.Context
 import android.util.Log
-import com.eju.cstartup.Initializer
+import com.eju.startup.Initializer
 import kotlinx.coroutines.delay
-import java.util.*
 
 
 class A0: Initializer {

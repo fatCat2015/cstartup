@@ -24,8 +24,8 @@
 
     <application>
         <provider
-            android:name="com.eju.cstartup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-cstartup"
+            android:name="com.eju.startup.InitializationProvider"
+            android:authorities="${applicationId}.eju-startup"
             android:exported="false"
             tools:node="merge" />
     </application>

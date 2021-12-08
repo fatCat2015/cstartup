@@ -1,10 +1,10 @@
-package com.eju.cstartup.demo
+package com.eju.startup.demo
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
-import com.eju.cstartup.R
+import com.eju.startup.R
 import java.util.*
 
 const val TAG = "sck220"

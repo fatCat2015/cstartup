@@ -1,11 +1,11 @@
-package com.eju.cstartup.demo
+package com.eju.startup.demo
 
 import android.content.Context
 import android.util.Log
-import com.eju.cstartup.Initializer
+import com.eju.startup.Initializer
 import kotlinx.coroutines.delay
 
-class C1: Initializer {
+class B0: Initializer {
 
     override suspend fun create(context: Context) {
         Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}")
@@ -14,6 +14,6 @@ class C1: Initializer {
     }
 
     override fun dependencies(): List<Class<out Initializer>> {
-        return listOf(B0::class.java,B2::class.java)
+        return listOf(A0::class.java)
     }
 }

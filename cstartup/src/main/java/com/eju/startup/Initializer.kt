@@ -1,4 +1,4 @@
-package com.eju.cstartup
+package com.eju.startup
 
 import android.content.Context
 

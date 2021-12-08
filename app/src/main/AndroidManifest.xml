@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.eju.cstartup">
+    package="com.eju.startup">
 
     <application
         android:allowBackup="true"
@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CStartup">
         <activity
-            android:name=".demo.MainActivity"
+            android:name="com.eju.startup.demo.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,15 +21,14 @@
         </activity>
 
         <provider
-            android:name="com.eju.cstartup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-cstartup"
+            android:name="com.eju.startup.InitializationProvider"
+            android:authorities="${applicationId}.eju-startup"
             android:exported="false"
             tools:node="merge" >
-
-            <meta-data  android:name="com.eju.cstartup.demo.C0"
-                android:value="androidx.cstartup" />
-            <meta-data  android:name="com.eju.cstartup.demo.C1"
-                android:value="androidx.cstartup" />
+            <meta-data android:name="com.eju.startup.demo.C0"
+                android:value="eju.startup" />
+            <meta-data android:name="com.eju.startup.demo.C1"
+                android:value="eju.startup" />
         </provider>
     </application>
 

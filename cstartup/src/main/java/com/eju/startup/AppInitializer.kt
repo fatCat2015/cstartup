@@ -1,10 +1,9 @@
-package com.eju.cstartup
+package com.eju.startup
 
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.startup.R
 import kotlinx.coroutines.*
 import java.util.HashMap
@@ -30,9 +29,7 @@ import java.util.HashSet
  * The discovery mechanism is via `<meta-data>` entries in the merged `AndroidManifest.xml`.
 </meta-data> */
 @SuppressLint("StaticFieldLeak")
-object AppInitializer {
-
-    private val context:Context = InitializationProvider.sContext
+internal class AppInitializer(private val context: Context) {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
@@ -74,7 +71,7 @@ object AppInitializer {
             val provider = ComponentName(context.packageName, InitializationProvider::class.java.name)
             val providerInfo = context.packageManager.getProviderInfo(provider, PackageManager.GET_META_DATA)
             val metadata = providerInfo.metaData
-            val startup = context.getString(R.string.androidx_cstartup)
+            val startup = context.getString(R.string.eju_startup)
             if (metadata != null) {
 
                 val keys = metadata.keySet()
