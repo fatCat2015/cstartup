@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.startup.R
 import kotlinx.coroutines.*
+import java.lang.NullPointerException
 import java.util.HashMap
 import java.util.HashSet
 
@@ -29,11 +30,17 @@ import java.util.HashSet
  * The discovery mechanism is via `<meta-data>` entries in the merged `AndroidManifest.xml`.
 </meta-data> */
 @SuppressLint("StaticFieldLeak")
-internal class AppInitializer(private val context: Context) {
+object AppInitializer{
+
+    private val context:Context = InitializationProvider.sContext
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-    private val initializerAllDependencies :HashMap<Initializer,HashSet<Initializer>> = HashMap()
+    private val mInitializedValue: MutableMap<Class<*>, Any> = hashMapOf()
+
+    private val initializerAllDependencies :HashMap<Initializer<*>,HashSet<Initializer<*>>> = HashMap()
+
+    fun <T> getInitializedValue(clazz: Class<*>) = mInitializedValue[clazz]?:throw  StartupException(NullPointerException("${clazz.simpleName} has not initialized"))
 
     internal fun discoverAndInitialize() {
         coroutineScope.launch {
@@ -53,7 +60,7 @@ internal class AppInitializer(private val context: Context) {
                     }
                 }.map {
                     async (Dispatchers.IO){
-                        it.create(context)
+                        mInitializedValue[it.javaClass] = it.create(context) as Any
                     }
                 }
             awaitList.forEach {
@@ -78,7 +85,7 @@ internal class AppInitializer(private val context: Context) {
                 /**
                  * 保存所有定义的Initializer(包含在meta-data中未定义的Initializer),和Initializer依赖的initializers
                  */
-                val initializers: HashMap<Initializer, HashSet<Initializer>> = hashMapOf()
+                val initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>> = hashMapOf()
 
                 /**
                  * 保存已经放在initializers中的Initializer的className
@@ -88,15 +95,15 @@ internal class AppInitializer(private val context: Context) {
                 /**
                  * 保存通过反射创建的Initializer
                  */
-                val createdInitializers :HashMap<String,Initializer> = hashMapOf()
+                val createdInitializers :HashMap<String,Initializer<*>> = hashMapOf()
 
                 for (key in keys) {
                     val value = metadata.getString(key, null)
                     if (startup == value) {
                         val clazz = Class.forName(key)
                         if (Initializer::class.java.isAssignableFrom(clazz)) {
-                            val component = clazz as Class<out Initializer>
-                            val initializer :Initializer = getOrCreateInitializerInstance(component,createdInitializers)
+                            val component = clazz as Class<out Initializer<*>>
+                            val initializer :Initializer<*> = getOrCreateInitializerInstance(component,createdInitializers)
                             assembleDependencies(initializer,initializers,addedInitializerClassNames,createdInitializers)
                         }
                     }
@@ -111,10 +118,10 @@ internal class AppInitializer(private val context: Context) {
         }
     }
 
-    private fun assembleDependencies(initializer :Initializer,
-                                     initializers: HashMap<Initializer, HashSet<Initializer>>,
+    private fun assembleDependencies(initializer :Initializer<*>,
+                                     initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>>,
                                      addedInitializerClassNames :HashSet<String>,
-                                     createdInitializers :HashMap<String,Initializer>){
+                                     createdInitializers :HashMap<String,Initializer<*>>){
         val initializerClassName = initializer.javaClass.name
         if(!addedInitializerClassNames.contains(initializerClassName)){
             initializers[initializer] =  initializer.dependencies().map { getOrCreateInitializerInstance(it,createdInitializers)  }.toHashSet().onEach {
@@ -125,8 +132,8 @@ internal class AppInitializer(private val context: Context) {
     }
 
 
-    private fun getOrCreateInitializerInstance(component:Class<out Initializer>,
-                                               createdInitializers :HashMap<String,Initializer>):Initializer{
+    private fun getOrCreateInitializerInstance(component:Class<out Initializer<*>>,
+                                               createdInitializers :HashMap<String,Initializer<*>>):Initializer<*>{
         return createdInitializers[component.name]?:component.getDeclaredConstructor().newInstance().also {
             createdInitializers[component.name] = it
         }
@@ -134,8 +141,8 @@ internal class AppInitializer(private val context: Context) {
 
 
     private fun assembleInitializerDependencies(
-        initializers: HashMap<Initializer, HashSet<Initializer>>,
-        initializerAllDependencies: HashMap<Initializer, HashSet<Initializer>>
+        initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>>,
+        initializerAllDependencies: HashMap<Initializer<*>, HashSet<Initializer<*>>>
     ) {
         initializers.forEach{
             val initializer = it.key
@@ -152,9 +159,9 @@ internal class AppInitializer(private val context: Context) {
         }
     }
 
-    private fun getAllDependencies(initializer:Initializer,
-                                   initializers: HashMap<Initializer,
-                                           HashSet<Initializer>>,dependencies:HashSet<Initializer>){
+    private fun getAllDependencies(initializer:Initializer<*>,
+                                   initializers: HashMap<Initializer<*>,
+                                           HashSet<Initializer<*>>>,dependencies:HashSet<Initializer<*>>){
 
         val initializerDependencies = initializers[initializer]
         if(initializerDependencies.isNullOrEmpty()){

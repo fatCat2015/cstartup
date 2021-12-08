@@ -3,6 +3,7 @@ package com.eju.startup
 import android.annotation.SuppressLint
 import android.content.ContentProvider
 import android.content.ContentValues
+import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import java.lang.IllegalStateException
@@ -27,10 +28,16 @@ import java.lang.IllegalStateException
  */
 @SuppressLint("StaticFieldLeak")
 class InitializationProvider : ContentProvider() {
+    companion object{
+        lateinit var sContext:Context
+            private set
+    }
+
     override fun onCreate(): Boolean {
         val context = context
         if (context != null) {
-            AppInitializer(context).discoverAndInitialize()
+            sContext = context
+            AppInitializer.discoverAndInitialize()
         } else {
             throw StartupException("Context cannot be null")
         }

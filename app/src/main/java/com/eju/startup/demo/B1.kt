@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-class B1: Initializer {
+class B1: Initializer<Unit> {
 
     override suspend fun create(context: Context) {
         withContext(Dispatchers.Main){
@@ -17,7 +17,7 @@ class B1: Initializer {
         }
     }
 
-    override fun dependencies(): List<Class<out Initializer>> {
+    override fun dependencies(): List<Class<out Initializer<*>>> {
         return listOf(A2::class.java,A3::class.java)
     }
 }

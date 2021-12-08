@@ -5,7 +5,7 @@ import android.util.Log
 import com.eju.startup.Initializer
 import kotlinx.coroutines.delay
 
-class A1: Initializer {
+class A1: Initializer<Unit> {
 
     override suspend fun create(context: Context) {
         Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}")
@@ -13,7 +13,7 @@ class A1: Initializer {
         Log.i(TAG, "${javaClass.simpleName} create end ${Thread.currentThread().id}")
     }
 
-    override fun dependencies(): List<Class<out Initializer>> {
+    override fun dependencies(): List<Class<out Initializer<*>>> {
         return emptyList()
     }
 }

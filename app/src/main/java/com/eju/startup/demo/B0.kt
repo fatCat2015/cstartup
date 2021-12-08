@@ -2,18 +2,19 @@ package com.eju.startup.demo
 
 import android.content.Context
 import android.util.Log
+import com.eju.startup.AppInitializer
 import com.eju.startup.Initializer
 import kotlinx.coroutines.delay
 
-class B0: Initializer {
+class B0: Initializer<Unit> {
 
     override suspend fun create(context: Context) {
-        Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}")
+        Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}  ${AppInitializer.getInitializedValue<String>(A0::class.java)}")
         delay(randomDelay)
         Log.i(TAG, "${javaClass.simpleName} create end ${Thread.currentThread().id}")
     }
 
-    override fun dependencies(): List<Class<out Initializer>> {
+    override fun dependencies(): List<Class<out Initializer<*>>> {
         return listOf(A0::class.java)
     }
 }

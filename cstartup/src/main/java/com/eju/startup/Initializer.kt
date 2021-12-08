@@ -8,7 +8,7 @@ import android.content.Context
  *
  * @param <T> The instance type being initialized
 </T> */
-interface Initializer {
+interface Initializer<T> {
     /**
      * Initializes and a component given the application [Context]
      *
@@ -16,7 +16,7 @@ interface Initializer {
      *
      * @param context The application context.
      */
-    suspend fun create(context: Context)
+    suspend fun create(context: Context):T
 
     /**
      * @return A list of dependencies that this [Initializer] depends on. This is
@@ -25,6 +25,6 @@ interface Initializer {
      * For e.g. if a [Initializer] `B` defines another
      * [Initializer] `A` as its dependency, then `A` gets initialized before `B`.
      */
-    fun dependencies(): List<Class<out Initializer>>
+    fun dependencies(): List<Class<out Initializer<*>>>
 
 }
