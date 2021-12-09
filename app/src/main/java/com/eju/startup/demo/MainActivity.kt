@@ -3,6 +3,7 @@ package com.eju.startup.demo
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.postDelayed
@@ -21,13 +22,14 @@ class MainActivity : AppCompatActivity() {
         val tv = findViewById<TextView>(R.id.tvTest)
 
         tv.setOnClickListener{
-            AppInitializer.initializeComponent(C1::class.java)
+            AppInitializer.initializeComponent(A2::class.java)
             Toast.makeText(this, "11111", Toast.LENGTH_SHORT).show()
         }
 
         tv.postDelayed(2000){
 //            startActivity(Intent(this,MainActivity2::class.java))
         }
+
 
     }
 }

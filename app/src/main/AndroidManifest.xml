@@ -30,7 +30,31 @@
             android:exported="false"
             tools:node="merge">
             <meta-data
+                android:name="com.eju.startup.demo.A0"
+                android:value="eju.startup" />
+            <meta-data
+                android:name="com.eju.startup.demo.A1"
+                android:value="eju.startup" />
+            <meta-data
+                android:name="com.eju.startup.demo.A2"
+                android:value="eju.startup" />
+            <meta-data
+                android:name="com.eju.startup.demo.A3"
+                android:value="eju.startup" />
+            <meta-data
+                android:name="com.eju.startup.demo.B0"
+                android:value="eju.startup" />
+            <meta-data
+                android:name="com.eju.startup.demo.B1"
+                android:value="eju.startup" />
+            <meta-data
+                android:name="com.eju.startup.demo.B2"
+                android:value="eju.startup" />
+            <meta-data
                 android:name="com.eju.startup.demo.C0"
+                android:value="eju.startup" />
+            <meta-data
+                android:name="com.eju.startup.demo.C1"
                 android:value="eju.startup" />
         </provider>
     </application>

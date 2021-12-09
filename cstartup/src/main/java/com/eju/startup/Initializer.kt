@@ -27,4 +27,9 @@ interface Initializer<T> {
      */
     fun dependencies(): List<Class<out Initializer<*>>>
 
+    /**
+     * return true means it will auto create when InitializationProvider init
+     */
+    fun autoCreated():Boolean = true
+
 }

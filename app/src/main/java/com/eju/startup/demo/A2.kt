@@ -16,4 +16,8 @@ class A2: Initializer<Unit> {
     override fun dependencies(): List<Class<out Initializer<*>>> {
         return emptyList()
     }
+
+    override fun autoCreated(): Boolean {
+        return false
+    }
 }
