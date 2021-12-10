@@ -9,8 +9,6 @@ import android.util.Log
 class App:Application() {
 
     companion object{
-        lateinit var topActivity:Activity
-            private set
         lateinit var application:Application
             private set
     }
@@ -19,7 +17,6 @@ class App:Application() {
         super.attachBaseContext(base)
         registerActivityLifecycleCallbacks(object:ActivityLifecycleCallbacks{
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-                topActivity = activity
             }
 
             override fun onActivityStarted(activity: Activity) {

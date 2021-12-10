@@ -8,13 +8,10 @@ import kotlinx.coroutines.delay
 import java.lang.Exception
 import java.lang.NullPointerException
 
-class A0: Initializer<Unit> {
+open class A0: Initializer<Unit> {
 
     override fun create(context: Context) {
-        Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}")
         Thread.sleep(randomDelay)
-        Log.i(TAG, "${javaClass.simpleName} a1 result ${Thread.currentThread().id}  ${AppInitializer.getInitializedValue<String>(A1::class.java)}")
-        Log.i(TAG, "${javaClass.simpleName} create end ${Thread.currentThread().id}")
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> {

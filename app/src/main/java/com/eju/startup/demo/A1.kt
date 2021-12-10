@@ -8,9 +8,7 @@ import kotlinx.coroutines.delay
 class A1: Initializer<String> {
 
     override  fun create(context: Context):String {
-        Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}")
         Thread.sleep(randomDelay)
-        Log.i(TAG, "${javaClass.simpleName} create end ${Thread.currentThread().id}")
         return "A1 result"
     }
 

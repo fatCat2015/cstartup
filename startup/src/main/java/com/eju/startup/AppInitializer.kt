@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.startup.R
 import java.lang.NullPointerException
 import java.util.HashMap
@@ -68,17 +69,27 @@ object AppInitializer{
     }
 
 
-    fun initializeComponent(component: Class<out Initializer<*>?>){
-        val targetInitializer = getOrCreateInitializerInstance(component)
-        if(mInitializedValue[component] !=null){
-            return
+    fun initializeComponent(vararg components: Class<out Initializer<*>?>,completeCallback:()->Unit = {}){
+        initializerAllDependencies.forEach {
+            log("${it.key} = ${it.value}")
         }
         val initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>> = hashMapOf()
-        initializers[targetInitializer] = (initializerAllDependencies[targetInitializer]?: hashSetOf()).onEach {
-            initializers[it] = initializerAllDependencies[it]?: hashSetOf()
+        components.forEach { component->
+            val targetInitializer = getOrCreateInitializerInstance(component)
+            if(mInitializedValue[component] ==null){
+                initializers[targetInitializer] = (initializerAllDependencies[targetInitializer]?: hashSetOf()).onEach {
+                    initializers[it] = initializerAllDependencies[it]?: hashSetOf()
+                }
+            }
+        }
+        log("----------------")
+        initializers.forEach {
+            log("${it.key} = ${it.value}")
         }
         doInitialize(initializers)
+        completeCallback.invoke()
     }
+
 
     private fun doInitialize(initializers :HashMap<Initializer<*>,HashSet<Initializer<*>>>) {
         var toCreateInitializers = initializers.filterValues { it.isEmpty()}.keys
@@ -98,9 +109,14 @@ object AppInitializer{
 
     private fun create(initializer: Initializer<*>) {
         try {
-            mInitializedValue[initializer.javaClass] = initializer.create(context) as Any
+            log("${initializer.javaClass.simpleName} start")
+            mInitializedValue[initializer.javaClass] = (initializer.create(context) as Any).also {
+                log("${initializer.javaClass.simpleName} end result:${it}")
+            }
         } catch (e: Exception) {
+            e.printStackTrace()
             initializer.onFailed(e)
+            log("${initializer.javaClass.simpleName} create failed ${e.message}")
         }
     }
 
@@ -118,7 +134,10 @@ object AppInitializer{
                 it.remove(initializer)
             }
         }
+    }
 
+    private fun log(obj:Any){
+        Log.i(this.javaClass.simpleName, "${obj}")
     }
 
 
