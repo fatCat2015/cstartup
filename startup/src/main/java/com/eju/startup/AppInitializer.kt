@@ -4,12 +4,12 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.startup.R
-import kotlinx.coroutines.*
 import java.lang.NullPointerException
 import java.util.HashMap
 import java.util.HashSet
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 /*
  * Copyright 2020 The Android Open Source Project
@@ -35,27 +35,90 @@ object AppInitializer{
 
     private val context:Context = InitializationProvider.sContext
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private val mInitializedValue: MutableMap<Class<*>, Any>  by lazy { hashMapOf() }
 
-    private val mInitializedValue: MutableMap<Class<*>, Any> = hashMapOf()
+    private val createdInitializers :HashMap<String,Initializer<*>> by lazy { hashMapOf() }
 
-
-    private val createdInitializers :HashMap<String,Initializer<*>> = hashMapOf()
+    private val executorService :ExecutorService by lazy { Executors.newFixedThreadPool(4) }
 
     /**
      * 所有的Initializer和它的所有前节点
      */
-    private val initializerAllDependencies :HashMap<Initializer<*>,HashSet<Initializer<*>>> = hashMapOf()
+    private val initializerAllDependencies :HashMap<Initializer<*>,HashSet<Initializer<*>>> by lazy { hashMapOf() }
 
     fun <T> getInitializedValue(clazz: Class<*>) = (mInitializedValue[clazz] as T)?:throw  StartupException(NullPointerException("${clazz.simpleName} has not initialized"))
 
-    fun cancel() = coroutineScope.cancel()
 
     internal fun discoverAndInitialize() {
-        coroutineScope.launch {
-            assembleInitializerDependencies()
-            initializeAutoCreatedInitializers()
+        assembleInitializerDependencies()
+        initializeAutoCreatedInitializers()
+    }
+
+
+    private fun initializeAutoCreatedInitializers() {
+        val initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>> = hashMapOf()
+        initializerAllDependencies.forEach {
+            val initializer = it.key
+            val initializerDependencies = it.value
+            if (initializer.autoCreated() && initializerDependencies.all { it.autoCreated() }) {
+                initializers[initializer] = initializerDependencies
+            }
         }
+        doInitialize(initializers)
+    }
+
+
+    fun initializeComponent(component: Class<out Initializer<*>?>){
+        val targetInitializer = getOrCreateInitializerInstance(component)
+        if(mInitializedValue[component] !=null){
+            return
+        }
+        val initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>> = hashMapOf()
+        initializers[targetInitializer] = (initializerAllDependencies[targetInitializer]?: hashSetOf()).onEach {
+            initializers[it] = initializerAllDependencies[it]?: hashSetOf()
+        }
+        doInitialize(initializers)
+    }
+
+    private fun doInitialize(initializers :HashMap<Initializer<*>,HashSet<Initializer<*>>>) {
+        var toCreateInitializers = initializers.filterValues { it.isEmpty()}.keys
+        while (toCreateInitializers.isNotEmpty()){
+            toCreateInitializers.filter { it.createOnMainThread() }.forEach { initializer->
+                create(initializer)
+            }
+            toCreateInitializers.filter { !it.createOnMainThread() }.map { initializer->
+                executorService.submit {
+                    create(initializer)
+                }
+            }.map { it.get() }  //调用get 阻塞主线程 等待初始化完成
+            reduce(toCreateInitializers,initializers)
+            toCreateInitializers = initializers.filterValues { it.isEmpty()}.keys
+        }
+    }
+
+    private fun create(initializer: Initializer<*>) {
+        try {
+            mInitializedValue[initializer.javaClass] = initializer.create(context) as Any
+        } catch (e: Exception) {
+            initializer.onFailed(e)
+        }
+    }
+
+    private fun reduce(
+        createdInitializers :Set<Initializer<*>>,
+        initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>>
+    ) {
+        createdInitializers.forEach { initializer->
+            initializers.remove(initializer)
+            initializerAllDependencies.remove(initializer)
+            initializers.values.forEach {
+                it.remove(initializer)
+            }
+            initializerAllDependencies.values.forEach {
+                it.remove(initializer)
+            }
+        }
+
     }
 
 
@@ -75,11 +138,6 @@ object AppInitializer{
                  */
                 val initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>> = hashMapOf()
 
-                /**
-                 * 保存通过反射创建的Initializer
-                 */
-                val createdInitializers :HashMap<String,Initializer<*>> = hashMapOf()
-
                 for (key in keys) {
                     val value = metadata.getString(key, null)
                     if (startup == value) {
@@ -91,71 +149,13 @@ object AppInitializer{
                         }
                     }
                 }
-                assembleInitializerDependencies(initializers,initializerAllDependencies)
-                initializerAllDependencies.forEach {
-                    Log.i("sck220", "${it.key} = ${it.value} ")
-                }
+                initializerAllDependencies.clear()
+                assembleInitializerDependencies(initializers)
             }
         } catch (exception: Throwable) {
             throw StartupException(exception)
         }
     }
-
-
-    private suspend fun CoroutineScope.initializeAutoCreatedInitializers() {
-        val initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>> = hashMapOf()
-        initializerAllDependencies.forEach {
-            val initializer = it.key
-            val initializerDependencies = it.value
-            if (initializer.autoCreated() && initializerDependencies.all { it.autoCreated() }) {
-                initializers[initializer] = initializerDependencies
-            }
-        }
-        doInitialize(initializers)
-    }
-
-
-    fun initializeComponent(component: Class<out Initializer<*>?>){
-        coroutineScope.launch {
-            val targetInitializer = getOrCreateInitializerInstance(component)
-            if(mInitializedValue[component] !=null){
-                return@launch
-            }
-            val initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>> = hashMapOf()
-            initializers[targetInitializer] = (initializerAllDependencies[targetInitializer]?: hashSetOf()).onEach {
-                initializers[it] = initializerAllDependencies[it]?: hashSetOf()
-            }
-            doInitialize(initializers)
-        }
-
-
-    }
-
-    private suspend fun CoroutineScope.doInitialize(initializers :HashMap<Initializer<*>,HashSet<Initializer<*>>>) {
-        var toCreateInitializers = initializers.filterValues { it.isEmpty()}
-        while (toCreateInitializers.isNotEmpty()){
-            val awaitList: List<Deferred<*>> = toCreateInitializers.keys
-                .onEach { initializer->
-                    initializers.remove(initializer)
-                    initializerAllDependencies.remove(initializer)
-                    initializers.values.forEach {
-                        it.remove(initializer)
-                    }
-                    initializerAllDependencies.values.forEach {
-                        it.remove(initializer)
-                    }
-                }.map {
-                    async {
-                        mInitializedValue[it.javaClass] = it.create(context) as Any
-                    }
-                }
-            awaitList.forEach {
-                it.await()
-            }
-            toCreateInitializers = initializers.filterValues { it.isEmpty()}
-        }
-    }
-
 
 
     private fun assembleDependencies(initializer :Initializer<*>,
@@ -173,8 +173,7 @@ object AppInitializer{
 
 
     private fun assembleInitializerDependencies(
-        initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>>,
-        initializerAllDependencies: HashMap<Initializer<*>, HashSet<Initializer<*>>>
+        initializers: HashMap<Initializer<*>, HashSet<Initializer<*>>>
     ) {
         initializers.forEach{
             val initializer = it.key

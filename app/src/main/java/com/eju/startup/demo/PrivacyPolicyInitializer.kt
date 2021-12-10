@@ -11,20 +11,14 @@ import kotlin.coroutines.resume
 
 class PrivacyPolicyInitializer:Initializer<Unit> {
 
-    override suspend fun create(context: Context) {
+    override  fun create(context: Context) {
         Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}")
         val result = when{
             hasAlreadyAgreedPrivacyPolicy() ->{
                true
             }
             else -> {
-                withContext(Dispatchers.Main){
-                    showPrivacyPolicyDialog(App.topActivity)
-                }
             }
-        }
-        if(!result){
-            AppInitializer.cancel()
         }
 
         Log.i(TAG, "${javaClass.simpleName} create end ${Thread.currentThread().id} ${result}")

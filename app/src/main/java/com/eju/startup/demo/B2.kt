@@ -7,13 +7,18 @@ import kotlinx.coroutines.delay
 
 class B2: Initializer<Unit> {
 
-    override suspend fun create(context: Context) {
+    override fun create(context: Context) {
         Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}")
-        delay(randomDelay)
+        Thread.sleep(randomDelay)
         Log.i(TAG, "${javaClass.simpleName} create end ${Thread.currentThread().id}")
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> {
         return emptyList()
     }
+
+    override fun autoCreated(): Boolean {
+        return false
+    }
+
 }

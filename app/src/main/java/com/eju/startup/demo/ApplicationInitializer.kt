@@ -8,9 +8,9 @@ import kotlinx.coroutines.delay
 
 class ApplicationInitializer: Initializer<String> {
 
-    override suspend fun create(context: Context):String {
+    override  fun create(context: Context):String {
         Log.i(TAG, "${javaClass.simpleName} create start ${Thread.currentThread().id}")
-        delay(randomDelay)
+        Thread.sleep(randomDelay)
         Log.i(TAG, "${javaClass.simpleName} create end ${Thread.currentThread().id}")
         return "A0 result"
     }

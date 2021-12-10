@@ -1,6 +1,7 @@
 package com.eju.startup
 
 import android.content.Context
+import java.lang.Exception
 
 /**
  * [Initializer]s can be used to initialize libraries during app startup, without
@@ -16,7 +17,7 @@ interface Initializer<T> {
      *
      * @param context The application context.
      */
-    suspend fun create(context: Context):T
+    fun create(context: Context):T
 
     /**
      * @return A list of dependencies that this [Initializer] depends on. This is
@@ -31,5 +32,17 @@ interface Initializer<T> {
      * return true means it will auto create when InitializationProvider init
      */
     fun autoCreated():Boolean = true
+
+    /**
+     * return true means create() called on main thread
+     */
+    fun createOnMainThread():Boolean = false
+
+    /**
+     * called on throw Exception when create
+     */
+    fun onFailed(e:Exception){
+
+    }
 
 }
