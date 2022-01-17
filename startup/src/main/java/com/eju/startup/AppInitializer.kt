@@ -4,12 +4,19 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import androidx.annotation.MainThread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.lang.NullPointerException
 import java.util.HashMap
 import java.util.HashSet
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.coroutines.resume
 
 /*
  * Copyright 2020 The Android Open Source Project
@@ -40,6 +47,8 @@ object AppInitializer{
     private val createdInitializers :HashMap<String,Initializer<*>> by lazy { hashMapOf() }
 
     private val executorService :ExecutorService by lazy { Executors.newFixedThreadPool(4) }
+
+    private val mainHandler:Handler by lazy { Handler(Looper.getMainLooper()) }
 
     /**
      * 所有的Initializer和它的所有前节点
@@ -78,8 +87,29 @@ object AppInitializer{
                 }
             }
         }
-        doInitialize(initializers)
-        completeCallback.invoke()
+        if(initializers.isEmpty()){
+            completeCallback.invoke()
+            return
+        }
+        if(Looper.myLooper()!= Looper.getMainLooper()){
+            mainHandler.post {
+                doInitialize(initializers)
+                completeCallback.invoke()
+            }
+        }else{
+            doInitialize(initializers)
+            completeCallback.invoke()
+        }
+    }
+
+    suspend fun initializeComponentSuspend(vararg components: Class<out Initializer<*>?>):Boolean{
+        return withContext(Dispatchers.Main){
+            suspendCancellableCoroutine { continuation->
+                initializeComponent(*components){
+                    continuation.resume(true)
+                }
+            }
+        }
     }
 
 
